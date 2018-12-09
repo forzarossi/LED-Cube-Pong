@@ -59,13 +59,14 @@ void create_new_game()
         LED_ON(7, 3 + i, 4 + j);
     }
   }
+  LED_ON(X, Y, Z);                          // Creates ball at (X,Y,Z) which are definded above and altered in animate 
 }
 
 /***================================================================
  * TODO
  * Should handle the motion of the ball by lighting corespoding LED
  ==================================================================**/
-void animate()
+void bounce()
 {
   if(X + R >= WIDTH)
   {
@@ -108,7 +109,8 @@ int L2input = 0, R2input = 0, U2input = 0, D2input = 0;    // USER 2's left, rig
 long time0 = 0;
 long time1 = 0;
 long time2 = 0;
-long bdelay = 100;
+long buttondelay = 100;
+int score[] = {0,0};
 
 void loop() 
 {

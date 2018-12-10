@@ -1,59 +1,115 @@
+
+#include <Wire.h>
+// The I2C addresses of the three chips
+#define BANK0 0x27
+#define BANK1 0x26
+#define BANK2 0x25
+
+const byte bankaddr[] = {BANK0, BANK1, BANK2}; //latch, transistor, pins
+
+void writeLatch(int pin, boolean state){
+  byte pinState = B00000000;
+  if(state==HIGH){
+    bitSet(pinState, pin);
+  }else{
+    bitClear(pinState, pin);
+  }
+  pcf8574_write(bankaddr[0], pinState);
+}
+void writeSwitch(int pin, boolean state){
+  byte pinState = B00000000;
+  
+  if(state==HIGH){
+    bitSet(pinState, pin);
+  }else{
+    bitClear(pinState, pin);
+  }
+    pcf8574_write(bankaddr[1], pinState);
+}
+void writePin(int pin, boolean state){
+  byte pinState = B00000000;
+  
+  if(state==HIGH){
+    bitSet(pinState, pin);
+  }else{
+    bitClear(pinState, pin);
+  }
+  pcf8574_write(bankaddr[2], pinState);
+}
+
+// Use I2C to write a byte to a chip at the given address
+void pcf8574_write(byte addr, byte value) {
+  Wire.beginTransmission(addr);
+  Wire.write(value);
+  Wire.endTransmission();  
+}
+
+
+
 int latches[] = {5, 6, 7, 8, 9, 10, 11, 12};
 int swiches[] = {3, 4, A0, A1, A2, A3, A4, A5}; 
-int pinSets[3][8] = {{0, 1, 2, 3, 4, 5, 6, 7},
-                     {8, 9, 10, 11, 12, 13, 14, 15},
-                     {16, 17, 18, 19, 20, 21, 22, 23}};
+int pinSet[] = {0, 1, 2, 3, 4, 5, 6, 7};
+   
+
+
+
 void setup() 
 {
-  for(int j = 0; j < 3; j++) 
+    Wire.begin();
+    Wire.setClock(400000L);  // Use I2C fast mode (400kHz). Recommended.
+    Serial.begin(9600);
+
+
+
+  for(int i = 0; i < 8; i++)
   {
-    for(int i = 0; i < 8; i++)
-    {
-      pinMode(pinSets[j][i], OUTPUT);
-      digitalWrite(pinSets[j][i], LOW);
-    }
+    writePin(i, LOW);
+    //digitalWrite(pinSet[i], LOW);
   }
   
   for(int i = 0; i < 8; i++)
   {
-    pinMode(latches[i], OUTPUT);
-    pinMode(swiches[i], OUTPUT);
-    digitalWrite(latches[i], LOW);
-    digitalWrite(swiches[i], LOW);
+    writeLatch(i, LOW);
+    writeSwitch(i, LOW);
+    //digitalWrite(latches[i], LOW);
+    //digitalWrite(swiches[i], LOW);
   }
 
   for(int i= 0; i < 8; i++)
   {
-    digitalWrite(latches[i], HIGH);
+    writeLatch(i, HIGH);
+    //digitalWrite(latches[i], HIGH);
   }  
   delay(100);
   for(int i= 0; i < 8; i++)
   {
-    digitalWrite(latches[i], LOW);
+    writeLatch(i, LOW);
+    //digitalWrite(latches[i], LOW);
   }   
 }
 
 void loop() 
 {
-  for(int set = 0; set < 3; set++)
-  {
     for(int index = 0; index < 8; index++)
     {
-      digitalWrite(pinSets[set][index], HIGH);
+      writePin(index, HIGH);
+      //digitalWrite(pinSet[index], HIGH);
       for(int i = 0; i < 8; i++)
       {
-        digitalWrite(swiches[i], HIGH);
+        writeSwitch(i, HIGH);
+        //digitalWrite(swiches[i], HIGH);
         for(int j = 0; j < 8; j++)
         {
-            //digitalWrite(testPins, HIGH);
-            digitalWrite(latches[j], HIGH);
-            delay(1000);
-            //digitalWrite(testPin, LOW);
-            digitalWrite(latches[j], LOW);   
+            writeLatch(j, HIGH);           
+            //digitalWrite(latches[j], HIGH);
+            delay(100);
+            writeLatch(j, LOW);
+            //digitalWrite(latches[j], LOW);   
         }
-            digitalWrite(swiches[i], LOW);
+            writeSwitch(i,LOW);
+            //digitalWrite(swiches[i], LOW);
         }
-        digitalWrite(pinSets[set][index], LOW);
+        writePin(index,LOW);
+        //digitalWrite(pinSet[index], LOW);
     }
-  }
 }
